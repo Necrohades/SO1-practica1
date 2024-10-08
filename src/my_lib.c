@@ -10,7 +10,6 @@ size_t my_strlen(const char *str) {
     
     return len;
 }
-#include "my_lib.h"
 
 //Función que copia en la posición asociada al puntero dest, el contenido al que apunta src
 char* my_strcpy(char* dest, const char* src){
