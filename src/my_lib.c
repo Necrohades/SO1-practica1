@@ -46,3 +46,38 @@ char *my_strcat(char *dest, const char *src) {
 
     return dest;
 }
+
+// Función que compara dos cadenas de caracteres, str1 y str2
+// Devuelve un valor entero:
+// < 0 si str1 es menor que str2
+// > 0 si str1 es mayor que str2
+// = 0 si ambas cadenas son iguales
+int my_strcmp(const char *str1, const char *str2) {
+    // Mientras ambos caracteres sean iguales y no sea el final de ninguna cadena ('\0')
+    while (*str1 && (*str1 == *str2)) {
+        str1++;  // Avanza al siguiente carácter de str1
+        str2++;  // Avanza al siguiente carácter de str2
+    }
+    
+    // Devuelve la diferencia entre los caracteres donde divergen
+    // Se hace casting a unsigned char para evitar problemas con caracteres negativos
+    return *(unsigned char *)str1 - *(unsigned char *)str2;
+}
+
+// Función que busca la primera ocurrencia del carácter c en la cadena str
+// Devuelve un puntero al carácter encontrado o NULL si no se encuentra
+char *my_strchr(const char *str, int c) {
+    // Recorre la cadena carácter a carácter
+    while (*str != '\0') {
+        // Si encuentra el carácter buscado, devuelve un puntero a su posición
+        if (*str == (char)c) {
+            return (char *)str;  // Casting para devolver puntero no constante
+        }
+        str++;  // Avanza al siguiente carácter
+    }
+    
+    // Si no encuentra el carácter y se llega al final de la cadena, retorna NULL
+    return NULL;
+}
+
+
