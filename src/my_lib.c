@@ -80,4 +80,42 @@ char *my_strchr(const char *str, int c) {
     return NULL;
 }
 
+//structuras para gestor de pila
+struct my_stack_node {      // nodo de la pila (elemento)
+    void *data;
+    struct my_stack_node *next;
+};
 
+struct my_stack {   // pila
+    int size;       // tamaño de data, nos lo pasarán por parámetro
+    struct my_stack_node *top;  // apunta al nodo de la parte superior
+};  
+
+//declaraciones funciones gestor de pila
+struct my_stack *my_stack_init(int size);
+int my_stack_push(struct my_stack *stack, void *data);
+
+void *my_stack_pop(struct my_stack *stack) {
+    struct my_stack_node top_node = *stack->top;
+    free(stack->top);
+    stack->top = top_node.next;
+    return top_node.data;
+}
+
+int my_stack_len(struct my_stack *stack);
+
+int my_stack_purge(struct my_stack *stack) {
+    int freed_bytes = sizeof(struct my_stack);
+    struct my_stack_node *top = stack->top;
+    while (top) {
+        struct my_stack_node *next = top->next;
+        free(top->data);
+        free(top);
+        top = next;
+        freed_bytes += sizeof(struct my_stack_node) + stack->size;
+    }
+    return freed_bytes;
+}
+
+struct my_stack *my_stack_read(char *filename);
+int my_stack_write(struct my_stack *stack, char *filename);
