@@ -114,6 +114,7 @@ int my_stack_purge(struct my_stack *stack) {
         top = next;
         freed_bytes += sizeof(struct my_stack_node) + stack->size;
     }
+    free(stack);
     return freed_bytes;
 }
 
