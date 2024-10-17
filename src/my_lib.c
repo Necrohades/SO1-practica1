@@ -1,6 +1,5 @@
 #include "my_lib.h"
 
-
 size_t my_strlen(const char *str) {
     size_t len = 0;
     while (*str++) {  // check if the content is 0 and increment the pointer to the next char
@@ -10,7 +9,7 @@ size_t my_strlen(const char *str) {
 }
 
 //Función que copia en la posición asociada al puntero dest, el contenido al que apunta src
-char *my_strcpy(char *dest, const char *src){
+char *my_strcpy(char *dest, const char *src) {
     char *tmp = dest;
     while (*src != '\0') { //Mientras el carácter al que apunte src no sea el carácter nulo
         *dest++ = *src++; //Copia el contenido de src a dest
@@ -21,7 +20,7 @@ char *my_strcpy(char *dest, const char *src){
 
 //Función que copia los n carácteres del string al que apunta src en la posición a la que apunta dest
 //en caso de n > longitud del string de src, se añaden carácteres nulos al contenido de dest
-char *my_strncpy(char *dest, const char *src, size_t n){
+char *my_strncpy(char *dest, const char *src, size_t n) {
     char *tmp = dest;
     int srclen = strlen(src);
     int dstlen = strlen(dest);
@@ -82,10 +81,7 @@ char *my_strchr(const char *str, int c) {
 
 //structuras para gestor de pila
 
-
 //declaraciones funciones gestor de pila
-#define EXITO 0
-#define FALLO -1
 struct my_stack *my_stack_init(int size) {
     if (size <= 0) return NULL;
 
@@ -98,26 +94,27 @@ struct my_stack *my_stack_init(int size) {
 }
 
 int my_stack_push(struct my_stack *stack, void *data) {
-    if (!stack || stack->size <= 0 || !data) return FALLO;
+    if (!stack || stack->size <= 0 || !data) return EXIT_FAILURE;
 
     struct my_stack_node *new_node = (struct my_stack_node *)malloc(sizeof(struct my_stack_node));
-    if (!new_node) return FALLO;
+    if (!new_node) return EXIT_FAILURE;
 
     new_node->data = malloc(stack->size);
     if (!new_node->data) {
         free(new_node);
-        return FALLO;
+        return EXIT_FAILURE;
     }
 
     memcpy(new_node->data, data, stack->size);
     new_node->next = stack->top;
     stack->top = new_node;
     
-    return EXITO;
+    return EXIT_SUCCESS;
 }
 
-
-
+/*
+ * Función que elimina el nodo superior de la pila, y devuelve el puntero a los datos de ese nodo.
+ */
 void *my_stack_pop(struct my_stack *stack) {
     struct my_stack_node top_node = *stack->top;
     free(stack->top);
@@ -139,11 +136,16 @@ int my_stack_len(struct my_stack *stack) {
     return count; // Devuelve el número total de nodos
 }
 
+/*
+ * Función que borra de forma iterativa los elementos de un stack, libera
+ * la memoria ocupada por el stack, los nodos y los datos y devuelve el
+ * número de bytes liberados.
+ */
 int my_stack_purge(struct my_stack *stack) {
     int freed_bytes = sizeof(struct my_stack);
     struct my_stack_node *top = stack->top;
-    while (top) {
-        struct my_stack_node *next = top->next;
+    while (top) {  // mientras no se ha llegado al fondo de la pila. comprueba si top != nullptr
+        struct my_stack_node *next = top->next;  // próximo nodo a borrar
         free(top->data);
         free(top);
         top = next;
@@ -155,28 +157,27 @@ int my_stack_purge(struct my_stack *stack) {
 
 struct my_stack *my_stack_read(char *filename);
 
-
 int my_stack_write(struct my_stack *stack,  char *filename) {
-    if (!stack || !filename) return FALLO;
+    if (!stack || !filename) return EXIT_FAILURE;
 
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-    if (fd == -1) return FALLO;
+    if (fd == -1) return EXIT_FAILURE;
 
     // Escribir el tamaño de los datos
     if (write(fd, &stack->size, sizeof(int)) != sizeof(int)) {
         close(fd);
-        return FALLO;
+        return EXIT_FAILURE;
     }
 
     struct my_stack_node *current = stack->top;
     while (current) {
         if (write(fd, current->data, stack->size) != stack->size) {
             close(fd);
-            return FALLO;
+            return EXIT_FAILURE;
         }
         current = current->next;
     }
 
     close(fd);
-    return EXITO;
+    return EXIT_SUCCESS;
 }
