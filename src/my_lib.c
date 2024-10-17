@@ -81,19 +81,42 @@ char *my_strchr(const char *str, int c) {
 }
 
 //structuras para gestor de pila
-struct my_stack_node {      // nodo de la pila (elemento)
-    void *data;
-    struct my_stack_node *next;
-};
 
-struct my_stack {   // pila
-    int size;       // tamaño de data, nos lo pasarán por parámetro
-    struct my_stack_node *top;  // apunta al nodo de la parte superior
-};  
 
 //declaraciones funciones gestor de pila
-struct my_stack *my_stack_init(int size);
-int my_stack_push(struct my_stack *stack, void *data);
+#define EXITO 0
+#define FALLO -1
+struct my_stack *my_stack_init(int size) {
+    if (size <= 0) return NULL;
+
+    struct my_stack *stack = (struct my_stack *)malloc(sizeof(struct my_stack));
+    if (!stack) return NULL;
+
+    stack->size = size;
+    stack->top = NULL;
+    return stack;
+}
+
+int my_stack_push(struct my_stack *stack, void *data) {
+    if (!stack || stack->size <= 0 || !data) return FALLO;
+
+    struct my_stack_node *new_node = (struct my_stack_node *)malloc(sizeof(struct my_stack_node));
+    if (!new_node) return FALLO;
+
+    new_node->data = malloc(stack->size);
+    if (!new_node->data) {
+        free(new_node);
+        return FALLO;
+    }
+
+    memcpy(new_node->data, data, stack->size);
+    new_node->next = stack->top;
+    stack->top = new_node;
+    
+    return EXITO;
+}
+
+
 
 void *my_stack_pop(struct my_stack *stack) {
     struct my_stack_node top_node = *stack->top;
@@ -102,7 +125,19 @@ void *my_stack_pop(struct my_stack *stack) {
     return top_node.data;
 }
 
-int my_stack_len(struct my_stack *stack);
+int my_stack_len(struct my_stack *stack) {
+    if (!stack) return 0; // Si la pila es NULL, devuelve 0
+
+    int count = 0; // Inicializa el contador
+    struct my_stack_node *current = stack->top; // Comienza desde el nodo superior
+
+    while (current) { // Mientras haya nodos
+        count++; // Incrementa el contador
+        current = current->next; // Avanza al siguiente nodo
+    }
+
+    return count; // Devuelve el número total de nodos
+}
 
 int my_stack_purge(struct my_stack *stack) {
     int freed_bytes = sizeof(struct my_stack);
@@ -119,4 +154,29 @@ int my_stack_purge(struct my_stack *stack) {
 }
 
 struct my_stack *my_stack_read(char *filename);
-int my_stack_write(struct my_stack *stack, char *filename);
+
+
+int my_stack_write(struct my_stack *stack,  char *filename) {
+    if (!stack || !filename) return FALLO;
+
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd == -1) return FALLO;
+
+    // Escribir el tamaño de los datos
+    if (write(fd, &stack->size, sizeof(int)) != sizeof(int)) {
+        close(fd);
+        return FALLO;
+    }
+
+    struct my_stack_node *current = stack->top;
+    while (current) {
+        if (write(fd, current->data, stack->size) != stack->size) {
+            close(fd);
+            return FALLO;
+        }
+        current = current->next;
+    }
+
+    close(fd);
+    return EXITO;
+}
