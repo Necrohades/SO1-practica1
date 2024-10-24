@@ -208,13 +208,17 @@ int my_stack_write(struct my_stack *stack,  char *filename) {
     current = tmpStack->top;
     while (current) {
         if (write(fd, current->data, stack->size) != stack->size) {
-            if(close(fd) == -1) perror("Error"); 
+            if (close(fd) == -1) perror("Error"); 
             perror("Error");
             return -1;
         }
-        current = current->next;
-        count++;   
+        struct my_stack_node *next = current->next;
+        free(current);
+        current = next;
+        count++;
     }
+
+    free(tmpStack);
 
     if(close(fd) == -1) perror("Error"); 
     return count;
